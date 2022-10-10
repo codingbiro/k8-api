@@ -1,2 +1,2 @@
 # k8s-api
-A simple restful api implementation deployed with k8
+A simple restful api implementation deployed with k8s
