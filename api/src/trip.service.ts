@@ -22,6 +22,7 @@ export class TripService {
     orderBy?: Prisma.TripOrderByWithRelationInput;
   }): Promise<Trip[]> {
     const { skip, take, cursor, where, orderBy } = params;
+
     return this.prisma.trip.findMany({
       skip,
       take,
@@ -60,6 +61,7 @@ export class TripService {
     data: Prisma.TripUpdateInput;
   }): Promise<Trip> {
     const { where, data } = params;
+
     return this.prisma.trip.update({
       data,
       where,

@@ -22,6 +22,7 @@ export class CarService {
     orderBy?: Prisma.CarOrderByWithRelationInput;
   }): Promise<Car[]> {
     const { skip, take, cursor, where, orderBy } = params;
+
     return this.prisma.car.findMany({
       skip,
       take,
@@ -44,6 +45,7 @@ export class CarService {
     if (existing.length) {
       throw new HttpException('Car already exists', HttpStatus.BAD_REQUEST);
     }
+
     return this.prisma.car.create({
       data,
     });
@@ -54,6 +56,7 @@ export class CarService {
     data: Prisma.CarUpdateInput;
   }): Promise<Car> {
     const { where, data } = params;
+
     return this.prisma.car.update({
       data,
       where,
