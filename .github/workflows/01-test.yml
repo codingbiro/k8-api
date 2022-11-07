@@ -12,10 +12,15 @@ jobs:
         run: |
           touch .env
           echo "${{ secrets.TEST_SECRET }}" | base64 --decode >> .env
-          echo "NODE_ENV=$(echo ASD)" >> $GITHUB_ENV
+          echo "NODE_ENV=$(echo ASD22)" >> $GITHUB_ENV
+          echo "NODE_ENV2=$(echo .env | jq '.NODE_ENV')" >> $GITHUB_ENV
+          echo .env | jq '.NODE_ENV' >> test.txt
+          cat .env | jq '.NODE_ENV' >> test2.txt
+          echo test.txt
+          echo test2.txt
       - name: my-step3
         run: | 
           echo "${{env.NODE_ENV}}"
           cat .env
       - name: Test
-        run: echo $NODE_ENV
+        run: echo $NODE_ENV2
