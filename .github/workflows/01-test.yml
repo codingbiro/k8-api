@@ -9,13 +9,13 @@ jobs:
       - name: my-step2
         run: echo ${{env.NODE_ENV}}
       - name: "Create .env file for Dockerfile to use"
-      env: |
-      TEST_ASD:123
         run: |
           touch .env
           echo "${{ secrets.TEST_SECRET }}" | base64 --decode >> .env
-          cat .env
+          echo "NODE_ENV=$(echo ASD)" >> $GITHUB_ENV
       - name: my-step3
         run: | 
         echo ${{env.NODE_ENV}}
         cat .env
+      - name: Test
+      run: echo $NODE_ENV
