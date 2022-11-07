@@ -6,3 +6,8 @@ jobs:
     steps:
       - name: my-step
         run: echo "Hello World!"
+      - name: "Create .env file for Dockerfile to use"
+        run: |
+          touch .env
+          echo "${{ env.TEST_SECRET }}" | base64 --decode >> .env
+          cat .env
