@@ -15,7 +15,7 @@ jobs:
           echo "NODE_ENV=$(echo ASD)" >> $GITHUB_ENV
       - name: my-step3
         run: | 
-        echo ${{env.NODE_ENV}}
+        echo "${{env.NODE_ENV}}"
         cat .env
       - name: Test
       run: echo $NODE_ENV
