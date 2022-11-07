@@ -9,6 +9,6 @@ jobs:
       - name: "Create .env file for Dockerfile to use"
         run: |
           touch .env
-          echo "${{ env.TEST_SECRET }}" | base64 --decode >> .env
+          echo "${{ secrets.TEST_SECRET }}" | base64 --decode >> .env
           cat .env
-          echo ${{ env.TEST_SECRET }}
+          echo ${{ secrets.TEST_SECRET }}
