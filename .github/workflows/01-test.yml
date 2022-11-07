@@ -11,4 +11,3 @@ jobs:
           touch .env
           echo "${{ secrets.TEST_SECRET }}" | base64 --decode >> .env
           cat .env
-          echo ${{ secrets.TEST_SECRET }}
