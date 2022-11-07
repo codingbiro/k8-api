@@ -12,11 +12,7 @@ jobs:
         run: |
           touch .env
           echo "${{ secrets.TEST_SECRET }}" | base64 --decode >> .env
-          echo "NODE_ENV=$(echo ASD22)" >> $GITHUB_ENV
-          echo .env | jq '.NODE_ENV' >> test.txt
-          cat .env | jq '.NODE_ENV' >> test2.txt
-          echo test.txt
-          echo test2.txt
+          echo "NODE_ENV=$(echo $(cat .env | grep NODE_ENV= | cut -d '=' -f2))" >> $GITHUB_ENV
       - name: my-step3
         run: | 
           echo "${{env.NODE_ENV}}"
