@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.container.name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.container.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.container.name }}
+        environment: {{ .Values.environment }}
+    spec:
+      containers:
+      - image: {{ .Values.container.imageWithTag }}
+        name: {{ .Values.container.name }}
+        imagePullPolicy: Never
+        securityContext:
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+        ports:
+          - containerPort: {{ .Values.container.port }}
+        env:
+          - name: environment
+            value: {{ .Values.environment }}
+          - name: "DATABASE_URL"
+            valueFrom:
+              secretKeyRef:
+                key:  database
+                name: test-db
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.container.port }}
+          initialDelaySeconds: 3
+          periodSeconds: 3
+          failureThreshold: 2
+

@@ -1,0 +1,8 @@
+environment: development
+container:
+  name: k8s-api
+  port: 4000
+  image: k8s-api
+  imageWithTag: k8s-api:latest
+replicas: 1
+namespace: k8s-api

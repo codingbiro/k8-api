@@ -1,0 +1,6 @@
+name: k8s-api
+sources:
+- https://github.com/codingbiro/k8s-api
+version: 1.0.0
+apiVersion: v1
+icon: https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Danmarks_Tekniske_Universitet_%28logo%29.svg/1413px-Danmarks_Tekniske_Universitet_%28logo%29.svg.png
