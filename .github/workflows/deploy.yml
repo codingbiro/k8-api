@@ -42,15 +42,15 @@ jobs:
         credentials: ${{ secrets.GKE_SA_KEY }}
     
     # Setup .env file
-    - name: Setup .env file
+    - name: Setup .env file for docker build
       run: |
-        touch .env
+        cd ./api && touch .env
         echo "${{ env.ENV_BASE64 }}" | base64 --decode >> .env
 
     # Build the Docker image
     - name: Build
       run: |-
-        cd ./api && docker build \
+        docker build \
           --tag "gcr.io/${{ secrets.GKE_PROJECT }}/$IMAGE:${{ github.sha }}" \
           --build-arg GITHUB_SHA="${{ github.sha }}" \
           --build-arg GITHUB_REF="${{ github.ref }}" \
