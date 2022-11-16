@@ -59,7 +59,7 @@ jobs:
           .
     - name: Delete .env file
       run: |
-        rm .env
+        cd ./api && rm .env
 
     # Push the Docker image to Google Container Registry
     - name: Publish
