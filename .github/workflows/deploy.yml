@@ -50,7 +50,7 @@ jobs:
     # Build the Docker image
     - name: Build
       run: |-
-        docker build \
+        cd ./api && docker build \
           --tag "gcr.io/${{ secrets.GKE_PROJECT }}/$IMAGE:${{ github.sha }}" \
           --build-arg GITHUB_SHA="${{ github.sha }}" \
           --build-arg GITHUB_REF="${{ github.ref }}" \
