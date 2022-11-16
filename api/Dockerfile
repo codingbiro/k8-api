@@ -12,6 +12,7 @@ RUN yarn install
 # Copy and build app
 WORKDIR /usr/app
 COPY . .
+RUN npx prisma generate
 RUN yarn prebuild && yarn build
 
 EXPOSE 4000
