@@ -52,7 +52,8 @@ jobs:
     # Build the Docker image
     - name: Build
       run: |-
-        cd ./api && docker build \
+        cd ./api && docker buildx build \
+          --platform linux/amd64 \
           --tag "gcr.io/${{ secrets.GKE_PROJECT }}/$IMAGE:${{ github.sha }}" \
           --build-arg GITHUB_SHA="${{ github.sha }}" \
           --build-arg GITHUB_REF="${{ github.ref }}" \
@@ -65,5 +66,3 @@ jobs:
     - name: Publish
       run: |-
         docker push "gcr.io/${{ secrets.GKE_PROJECT }}/$IMAGE:${{ github.sha }}"
-
-  
