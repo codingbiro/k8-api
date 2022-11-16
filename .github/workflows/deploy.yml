@@ -40,6 +40,12 @@ jobs:
         cluster_name: ${{ secrets.GKE_CLUSTER }}
         location: ${{ secrets.GKE_ZONE }}
         credentials: ${{ secrets.GKE_SA_KEY }}
+    
+    # Setup .env file
+    - name: Setup .env file
+      run: |
+        touch .env
+        echo "${{ env.ENV_BASE64 }}" | base64 --decode >> .env
 
     # Build the Docker image
     - name: Build
@@ -49,6 +55,9 @@ jobs:
           --build-arg GITHUB_SHA="${{ github.sha }}" \
           --build-arg GITHUB_REF="${{ github.ref }}" \
           .
+    - name: Delete .env file
+      run: |
+        rm .env
 
     # Push the Docker image to Google Container Registry
     - name: Publish
