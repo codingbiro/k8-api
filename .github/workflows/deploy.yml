@@ -46,6 +46,8 @@ jobs:
       run: |
         cd ./api && touch .env
         echo "${{ secrets.ENV_BASE64 }}" | base64 --decode >> .env
+        echo "NODE_ENV=$(echo $(cat .env | grep NODE_ENV= | cut -d '=' -f2))" >> $GITHUB_ENV
+
 
     # Build the Docker image
     - name: Build
@@ -64,15 +66,4 @@ jobs:
       run: |-
         docker push "gcr.io/${{ secrets.GKE_PROJECT }}/$IMAGE:${{ github.sha }}"
 
-    - name: Deploy
-      uses: deliverybot/helm@v1
-      with:
-        release: $DEPLOYMENT_NAME
-        namespace: ${{ secrets.NAMESPACE }}
-        chart: ./helm/Chart.yaml
-        token: ${{ github.token }}
-        values: |
-          name: foobar
-        value-files: values.yaml
-      env:
-        KUBECONFIG_FILE: ${{ secrets.KUBECONFIG }}
+  
