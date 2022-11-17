@@ -45,8 +45,7 @@ jobs:
       run: |
         cd ./api && touch .env
         echo "${{ secrets.ENV_BASE64 }}" | base64 --decode >> .env
-        echo "NODE_ENV=$(echo $(cat .env | grep NODE_ENV= | cut -d '=' -f2))" >> $GITHUB_ENV
-
+        echo "DATABASE_URL=$(echo $(cat .env | grep DATABASE_URL= | cut -d '=' -f2))" >> $GITHUB_ENV
 
     # Build the Docker image
     - name: Build
@@ -56,11 +55,25 @@ jobs:
           --build-arg GITHUB_SHA="${{ github.sha }}" \
           --build-arg GITHUB_REF="${{ github.ref }}" \
           .
-    - name: Delete .env file
-      run: |
-        cd ./api && rm .env
 
     # Push the Docker image to Google Container Registry
     - name: Publish
       run: |-
         docker push "gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}"
+
+    # Helm
+    - name: Helm
+      run: |-
+        curl -sfLo helm https://get.helm.sh/helm-v3.10.2-linux-amd64.tar.gz
+        chmod u+x ./helm
+
+    # Deploy
+    - name: Deploy
+      run: |-
+        helm upgrade --install --set database=${{ env.DATABASE_URL }} k8s-api2 --namespace k8s-api2 --create-namespace ./helm
+        kubectl get services -o wide
+
+    # Clean up
+    - name: Delete .env file
+      run: |
+        cd ./api && rm .env
