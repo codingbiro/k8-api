@@ -65,7 +65,9 @@ jobs:
     - name: Helm
       run: |-
         curl -sfLo helm https://get.helm.sh/helm-v3.10.2-linux-amd64.tar.gz
-        chmod u+x ./helm
+        mkdir helmsr
+        tar -xf helm -C ./helmsr
+        chmod u+x ./helmsr
 
     # Deploy
     - name: Deploy
