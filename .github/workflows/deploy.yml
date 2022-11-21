@@ -61,20 +61,20 @@ jobs:
       run: |-
         docker push "gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}"
 
-    # Helm
-    - name: Helm
+    # Set up kustomize
+    - name: Set up Kustomize
       run: |-
-        curl -sfLo helm https://get.helm.sh/helm-v3.10.2-linux-amd64.tar.gz
-        mkdir helmsr
-        tar -xf helm -C ./helmsr
-        chmod u+x ./helmsr
+        curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
+        chmod u+x ./kustomize
 
-    # Deploy
+    # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |-
-        helm upgrade --install --set database=${{ env.DATABASE_URL }} k8s-api2 --namespace k8s-api2 --create-namespace ./helm
+        ./kustomize edit set image gcr.io/PROJECT_ID/IMAGE:TAG=gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}
+        ./kustomize build . | kubectl apply -f -
+        kubectl rollout status deployment/$DEPLOYMENT_NAME
         kubectl get services -o wide
-
+    
     # Clean up
     - name: Delete .env file
       run: |
