@@ -1,0 +1,66 @@
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  DEPLOYMENT_NAME: ${{ github.repository }}
+  K8S_NAMESPACE: "default"
+  CHART_SECRET_NAME: "c-secret"
+  CHART_IMAGE_PULL_SECRET_NAME: "w-c-secret"
+
+jobs:
+  steps:
+    - uses: actions/checkout@master
+
+    - name: Login to GCR
+      uses: docker/login-action@v2
+      with:
+        registry: gcr.io
+        username: _json_key
+        password: ${{ secrets.GKE_SA_KEY }}
+
+    - run: |
+        cd ./api && docker build . -t gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }} \
+        --build-arg GITHUB_SHA="${{ github.sha }}" \
+        --build-arg GITHUB_REF="${{ github.ref }}"
+        docker push contoso.azurecr.io/k8sdemo:${{ github.sha }}
+  
+    - uses: azure/setup-kubectl@v2.0
+
+    # Set the target AKS cluster.
+    - uses: Azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: contoso
+        resource-group: contoso-rg
+
+    - name: Setup .env file for docker build
+      run: |
+        touch asd.json
+        echo "${{ secrets.GKE_SA_KEY }}" >> asd.json
+
+    - uses: Azure/k8s-create-secret@v1.1
+      with:
+        container-registry-url: gcr.io
+        container-registry-username: _json_key
+        container-registry-email: ${{ secrets.GKE_EMAIL }}
+        container-registry-password: "$(cat asd.json)"
+        secret-name: demo-k8s-secret
+
+    - uses: Azure/k8s-deploy@v3.1
+      with:
+        action: deploy
+        manifests: |
+            manifests/deployment.yml
+            manifests/service.yml
+        images: |
+            demo.azurecr.io/k8sdemo:${{ github.sha }}
+        imagepullsecrets: |
+            demo-k8s-secret
