@@ -59,7 +59,8 @@ jobs:
           -n ${{ env.K8S_NAMESPACE }} \
           --dry-run -o yaml \
           --docker-server=gcr.io \
-          --docker-username=${{ secrets.GKE_EMAIL }} \
+          --docker-username=_json_key \
+          --docker-email=${{ secrets.GKE_EMAIL }} \
           --docker-password=${{ secrets.GKE_SA_KEY }} | \
         kubectl apply -f -
     - name: "Create .env secrets"
