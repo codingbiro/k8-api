@@ -84,9 +84,12 @@ jobs:
       run: |-
         docker push "gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}"
 
-    - uses: azure/k8s-bake@v2.2
+    - name: Bake
+      uses: azure/k8s-bake@v2.2
+      id: bake-web
       with:
         renderEngine: 'helm'
+        releaseName: "${{ env.CHART_RELEASE_NAME }}"
         helmChart: './helm/'
         helm-version: 'latest'
         silent: 'false'
