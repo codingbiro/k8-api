@@ -93,6 +93,8 @@ jobs:
         helmChart: './helm/'
         helm-version: 'latest'
         silent: 'false'
+        overrides: |
+            container.imageWithTag:gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}
 
     - name: "Deploys API using the Helm output"
       uses: Azure/k8s-deploy@v1
