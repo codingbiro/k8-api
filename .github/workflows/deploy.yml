@@ -69,7 +69,7 @@ jobs:
         namespace: ${{ env.K8S_NAMESPACE }}
         secret-type: 'generic'
         secret-name: ${{ env.CHART_SECRET_NAME }}
-        data: '{ ".env": "${{ env.ENV_FILE_BASE64 }}" }'
+        data: '{ ".env": "${{ env.ENV_BASE64 }}" }'
 
     # Build the Docker image
     - name: Build
