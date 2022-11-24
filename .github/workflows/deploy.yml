@@ -89,7 +89,7 @@ jobs:
       id: bake-web
       with:
         renderEngine: 'helm'
-        releaseName: "${{ env.CHART_RELEASE_NAME }}"
+        releaseName: 'apirelease'
         helmChart: './helm/'
         helm-version: 'latest'
         silent: 'false'
