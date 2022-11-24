@@ -42,8 +42,8 @@ jobs:
     - name: "Get credentials for the GKE cluster"
       uses: google-github-actions/get-gke-credentials@v0
       with:
-        cluster_name: ${{ env.GKE_CLUSTER }}
-        location: ${{ env.GKE_ZONE }}
+        cluster_name: ${{ secrets.GKE_CLUSTER }}
+        location: ${{ secrets.GKE_ZONE }}
 
     # Create Kubernetes namespace if it does not exist
     - name: "Create K8S namespace if it doesn't exist"
