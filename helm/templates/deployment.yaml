@@ -13,8 +13,6 @@ spec:
         app: {{ .Values.container.name }}
         environment: {{ .Values.environment }}
     spec:
-      volumes:
-        {{- toYaml .Values.volumes | nindent 8 }}
       containers:
       - image: {{ .Values.container.imageWithTag }}
         name: {{ .Values.container.name }}
@@ -27,6 +25,11 @@ spec:
         env:
           - name: environment
             value: {{ .Values.environment }}
+          - name: "DATABASE_URL"
+            valueFrom:
+              secretKeyRef:
+                key:  database
+                name: db-url
         livenessProbe:
           httpGet:
             path: /health
@@ -34,6 +37,4 @@ spec:
           initialDelaySeconds: 3
           periodSeconds: 3
           failureThreshold: 2
-        volumeMounts:
-          {{- toYaml .Values.volumeMounts | nindent 12 }}
 
