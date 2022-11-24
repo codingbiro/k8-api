@@ -27,11 +27,6 @@ spec:
         env:
           - name: environment
             value: {{ .Values.environment }}
-          - name: "DATABASE_URL"
-            valueFrom:
-              secretKeyRef:
-                key:  database
-                name: test-db
         livenessProbe:
           httpGet:
             path: /health
