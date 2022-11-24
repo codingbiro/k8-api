@@ -13,6 +13,8 @@ spec:
         app: {{ .Values.container.name }}
         environment: {{ .Values.environment }}
     spec:
+      volumes:
+        {{- toYaml .Values.volumes | nindent 8 }}
       containers:
       - image: {{ .Values.container.imageWithTag }}
         name: {{ .Values.container.name }}
