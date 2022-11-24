@@ -96,12 +96,12 @@ jobs:
         silent: 'false'
         overrides: |
             container.imageWithTag:gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}
-            volumes[0].name:${{ env.CHART_SECRET_NAME }}
+            volumes[0].name:${{ env.CHART_SECRET_NAME }}-volume
             volumes[0].secret.secretName:${{ env.CHART_SECRET_NAME }}
-            volumes[0].secret.defaultMode:420
-            volumeMounts[0].name:${{ env.CHART_SECRET_NAME }}
-            volumeMounts[0].mountPath:/usr/src/app/.env
+            volumeMounts[0].name:${{ env.CHART_SECRET_NAME }}-volume
+            volumeMounts[0].mountPath:/usr/app/.env
             volumeMounts[0].subPath:.env
+            volumeMounts[0].readOnly:true
 
     - name: "Deploys API using the Helm output"
       uses: Azure/k8s-deploy@v1
