@@ -51,13 +51,15 @@ jobs:
 
     - name: "Create imagePullSecret"
       run: |
+        touch docker.json | \
+        echo ${{ secrets.GKE_SA_KEY }} >> docker.json | \
         kubectl create secret docker-registry ${{ env.CHART_IMAGE_PULL_SECRET_NAME }} \
           -n ${{ env.K8S_NAMESPACE }} \
           --dry-run -o yaml \
-          --docker-server=gcr.io \
-          --docker-username=_json_key \
-          --docker-email=${{ secrets.GKE_EMAIL }} \
-          --docker-password=${{ secrets.GKE_SA_KEY }} | \
+          --docker-server gcr.io \
+          --docker-username _json_key \
+          --docker-email ${{ secrets.GKE_EMAIL }} \
+          --docker-password="$(cat ./docker.json)" | \
         kubectl apply -f -
 
     - name: "Create .env secrets"
