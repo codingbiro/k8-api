@@ -16,7 +16,7 @@ spec:
       containers:
       - image: {{ .Values.container.imageWithTag }}
         name: {{ .Values.container.name }}
-        imagePullPolicy: Never
+        imagePullPolicy: Always
         securityContext:
           runAsUser: 1000
           allowPrivilegeEscalation: false
