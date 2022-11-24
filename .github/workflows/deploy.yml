@@ -12,7 +12,7 @@ on:
 env:
   DEPLOYMENT_NAME: ${{ github.repository }}
   K8S_NAMESPACE: "default"
-  CHART_SECRET_NAME: "c-secret"
+  CHART_SECRET_NAME: "test-secret"
   CHART_IMAGE_PULL_SECRET_NAME: "w-c-secret"
 
 jobs:
@@ -60,7 +60,8 @@ jobs:
           --docker-username _json_key \
           --docker-email ${{ secrets.GKE_EMAIL }} \
           --docker-password="$(cat ./docker.json)" | \
-        kubectl apply -f -
+        kubectl apply -f - | \
+        rm docker.json
 
     - name: "Create .env secrets"
       uses: azure/k8s-create-secret@v2
@@ -95,6 +96,12 @@ jobs:
         silent: 'false'
         overrides: |
             container.imageWithTag:gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}
+            volumes[0].name:${{ env.CHART_SECRET_NAME }}
+            volumes[0].secret.secretName:${{ env.CHART_SECRET_NAME }}
+            volumes[0].secret.defaultMode:420
+            volumeMounts[0].name:${{ env.CHART_SECRET_NAME }}
+            volumeMounts[0].mountPath:/usr/src/app/.env
+            volumeMounts[0].subPath:.env
 
     - name: "Deploys API using the Helm output"
       uses: Azure/k8s-deploy@v1
