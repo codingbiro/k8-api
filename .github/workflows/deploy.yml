@@ -1,7 +1,3 @@
-# GitHub recommends pinning actions to a commit SHA.
-# To get a newer version, you will need to update the SHA.
-# You can also reference a tag or branch, but the action may change without warning.
-
 name: Build and Deploy to GKE
 
 on:
@@ -11,13 +7,16 @@ on:
 
 env:
   DEPLOYMENT_NAME: ${{ github.repository }}
-  K8S_NAMESPACE: "default"
-  CHART_SECRET_NAME: "test-secret"
-  CHART_IMAGE_PULL_SECRET_NAME: "w-c-secret"
+  K8S_NAMESPACE: default
+  CHART_SECRET_NAME: test-secret
+  CHART_IMAGE_PULL_SECRET_NAME: w-c-secret
+  RELEASE_NAME: apirelease
+  // REGISTRY: gcr.io
+  REGISTRY_WITH_IMAGE: ${{ secrets.REGISTRY }}/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}
 
 jobs:
   setup-build-publish-deploy:
-    name: Setup, Build, Publish, and Deploy
+    name: Build and Deploy
     runs-on: ubuntu-latest
     environment: production
 
@@ -28,78 +27,66 @@ jobs:
     - name: Login to GCR
       uses: docker/login-action@v2
       with:
-        registry: gcr.io
+        registry: ${{ secrets.REGISTRY }}
         username: _json_key
         password: ${{ secrets.GKE_SA_KEY }}
 
-    - name: 'Authenticate to Google Cloud'
-      id: 'auth'
-      uses: 'google-github-actions/auth@v0'
+    - name: Authenticate to Google Cloud
+      id: auth
+      uses: google-github-actions/auth@v0
       with:
-        credentials_json: '${{ secrets.GKE_SA_KEY }}'
+        credentials_json: ${{ secrets.GKE_SA_KEY }}
 
-    # Get the GKE credentials, so we can deploy to the cluster
-    - name: "Get credentials for the GKE cluster"
+    - name: Get credentials for the GKE cluster
       uses: google-github-actions/get-gke-credentials@v0
       with:
         cluster_name: ${{ secrets.GKE_CLUSTER }}
         location: ${{ secrets.GKE_ZONE }}
 
-    # Create Kubernetes namespace if it does not exist
-    - name: "Create K8S namespace if it doesn't exist"
+    - name: Create K8S namespace if it does not exist
       run: kubectl create namespace ${{ env.K8S_NAMESPACE }} --dry-run=client -o json | kubectl apply -f -
 
-    - name: "Create imagePullSecret"
+    - name: Create imagePullSecret
       run: |
         touch docker.json | \
         echo ${{ secrets.GKE_SA_KEY }} >> docker.json | \
         kubectl create secret docker-registry ${{ env.CHART_IMAGE_PULL_SECRET_NAME }} \
           -n ${{ env.K8S_NAMESPACE }} \
           --dry-run -o yaml \
-          --docker-server gcr.io \
+          --docker-server ${{ secrets.REGISTRY }} \
           --docker-username _json_key \
           --docker-email ${{ secrets.GKE_EMAIL }} \
           --docker-password="$(cat ./docker.json)" | \
         kubectl apply -f - | \
         rm docker.json
 
-    - name: "Create .env secrets"
-      uses: azure/k8s-create-secret@v2
-      with:
-        namespace: ${{ env.K8S_NAMESPACE }}
-        secret-type: 'generic'
-        secret-name: ${{ env.CHART_SECRET_NAME }}
-        data: '{ ".env": "${{ env.ENV_BASE64 }}" }'
-
-    # Build the Docker image
-    - name: Build
+    - name: Build Docker image
       run: |-
         cd ./api && docker build \
-          --tag "gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}" \
+          --tag "${{ env.REGISTRY_WITH_IMAGE }}" \
           --build-arg GITHUB_SHA="${{ github.sha }}" \
           --build-arg GITHUB_REF="${{ github.ref }}" \
           .
 
-    # Push the Docker image to Google Container Registry
-    - name: Publish
+    - name: Publish image to registry
       run: |-
-        docker push "gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}"
+        docker push ${{ env.REGISTRY_WITH_IMAGE }}
 
-    - name: Bake
+    - name: Bake with Helm
       uses: azure/k8s-bake@v2.2
       id: bake-web
       with:
-        renderEngine: 'helm'
-        releaseName: 'apirelease'
-        helmChart: './helm/'
-        helm-version: 'latest'
-        silent: 'false'
+        renderEngine: helm
+        releaseName: ${{ env.RELEASE_NAME }}
+        helmChart: ./helm/
+        helm-version: latest
+        silent: false
         overrides: |
-            container.imageWithTag:gcr.io/${{ secrets.GKE_PROJECT }}/${{ github.repository }}:${{ github.sha }}
-            database:${{ secrets.DB_URL_BASE64 }}
+            container.imageWithTag:${{ env.REGISTRY_WITH_IMAGE }}
+            database.url:${{ secrets.DB_URL }}
 
-    - name: "Deploys API using the Helm output"
-      uses: Azure/k8s-deploy@v1
+    - name: Deploys API using the Helm output
+      uses: azure/k8s-deploy@v1
       with:
         manifests: |
           ${{ steps.bake-web.outputs.manifestsBundle }}

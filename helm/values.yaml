@@ -5,4 +5,9 @@ container:
   image: k8s-api
   imageWithTag: k8s-api:latest
 replicas: 1
+healthPath: /health
 namespace: k8s-api
+database:
+  name: database
+  url: ""
+  key: url
